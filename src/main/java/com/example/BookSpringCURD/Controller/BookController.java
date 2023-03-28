@@ -7,6 +7,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.matc
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -125,7 +126,38 @@ public class BookController
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("try agrain...");
 			
 		}
-		
+	    @GetMapping("/directoryStructure")
+        public List<List<String>> getDirectory(@RequestParam("path") String path) throws Exception {
+           
+         logger.info("inside method get directory");
+           
+         logger.info("acquiring directory path");
+            File directory = new File(path);
+         logger.info("directory path acquired");
+         logger.info("Getting contents of directory");
+            String[] contents = directory.list();
+            if (contents == null) {
+          logger.error("Failed to acquire content of directory");
+                throw new Exception("Failed to get contents of directory: " + path);
+            }
+           logger.info("content acquired");
+            List<String> folders = new ArrayList<>();
+            List<String> files = new ArrayList<>();
+            logger.info("sorting content into file and directory");
+            for (String content : contents) {
+                File f = new File(directory, content);
+                if (f.isDirectory()) {
+                    folders.add(content);
+                } else if (f.isFile()) {
+                    files.add(content);
+                }
+            }
+            List<List<String>> result = new ArrayList<>();
+            result.add(folders);
+            result.add(files);
+           logger.info("Sorting success");
+            return result;
+        }
 	    //this api send simple email
 	    @PostMapping("/sendingemail")
 	    public ResponseEntity<?> sendEmail(@RequestBody EmailRequest request)
