@@ -8,6 +8,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -34,11 +35,14 @@ import org.springframework.data.mongodb.core.schema.MongoJsonSchema.ConflictReso
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +58,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.example.BookSpringCURD.BookSpringCurdApplication;
 import com.example.BookSpringCURD.Model.Author;
 import com.example.BookSpringCURD.Model.Book;
+import org.springframework.core.io.Resource;
 import com.example.BookSpringCURD.Model.EmailRequest;
 import com.example.BookSpringCURD.Model.FileUploadHelper;
 import com.example.BookSpringCURD.Repository.BookRepository;
@@ -126,6 +131,33 @@ public class BookController
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("try agrain...");
 			
 		}
+	    @GetMapping("/downloadFile")
+	    public ResponseEntity<Resource> downloadFile() throws IOException {
+	        String filePath = "/home/inferyx/Downloads/MySqlCurd/src/main/resources/static/image/bc.txt";
+	        Resource resource = new FileSystemResource(filePath);
+	        //File file = resource.getFile();
+
+	        if (!resource.exists()) 
+	        {
+	        	logger.warn("FIle not found");
+	            throw new FileNotFoundException("File not found");
+	        }
+
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + resource.getFilename());
+
+	        return ResponseEntity.ok()
+	                
+	               // .contentLength(file.length())
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .headers(headers)
+	                .body(resource);
+	    }
+	    
+	    @ExceptionHandler(FileNotFoundException.class)
+	    public ResponseEntity<String> handleFileNotFoundException(FileNotFoundException ex) {
+	       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found");
+	    }
 	    @GetMapping("/directoryStructure")
         public List<List<String>> getDirectory(@RequestParam("path") String path) throws Exception {
            
