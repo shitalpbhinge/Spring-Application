@@ -58,6 +58,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.example.BookSpringCURD.BookSpringCurdApplication;
 import com.example.BookSpringCURD.Model.Author;
 import com.example.BookSpringCURD.Model.Book;
+
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import com.example.BookSpringCURD.Model.EmailRequest;
 import com.example.BookSpringCURD.Model.FileUploadHelper;
@@ -161,7 +163,7 @@ public class BookController
 	    @GetMapping("/directoryStructure")
         public List<List<String>> getDirectory(@RequestParam("path") String path) throws Exception {
            
-         logger.info("inside method get directory");
+       
            
          logger.info("acquiring directory path");
             File directory = new File(path);
